@@ -1,25 +1,42 @@
+version: "3.9"
+
 services:
   postgres:
-    image: postgres:17-alpine
-    container_name: nest-postgres
-    restart: unless-stopped
-
+    image: postgres:16-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: nest_app
-
+      POSTGRES_DB: vocably
+      POSTGRES_USER: vocably
+      POSTGRES_PASSWORD: vocably
     ports:
-      - '5432:5432'
-
+      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
+      - vocably_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d nest_app']
+      test: ["CMD-SHELL", "pg_isready -U vocably"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: vocably
+      DB_USER: vocably
+      DB_PASSWORD: vocably
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+
 volumes:
-  postgres_data:
+  vocably_pgdata:
