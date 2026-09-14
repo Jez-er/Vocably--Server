@@ -27,6 +27,11 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiration: 900000
+  refresh-expiration: 604800000
+
 springdoc:
   swagger-ui:
     path: /docs
