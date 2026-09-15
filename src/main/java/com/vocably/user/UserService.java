@@ -5,8 +5,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class UserService {
 	private final UserRepository userRepository;
 
@@ -14,10 +16,11 @@ public class UserService {
 		this.userRepository = userRepository;
 	}
 
+	@Transactional
 	public User createUser(String email, String displayName, String passwordHash) {
 		User user = new User();
-		user.setEmail(email);
-		user.setDisplayName(displayName);
+		user.setEmail(email.trim().toLowerCase());
+		user.setDisplayName(displayName.trim());
 		user.setPasswordHash(passwordHash);
 		return userRepository.save(user);
 	}
@@ -27,7 +30,6 @@ public class UserService {
 	}
 
 	public Optional<User> getUserByEmail(String email) {
-		return userRepository.findByEmail(email);
+		return userRepository.findByEmail(email.trim().toLowerCase());
 	}
-
 }

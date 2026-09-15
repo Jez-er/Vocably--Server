@@ -2,10 +2,9 @@ package com.vocably.auth;
 
 import java.util.UUID;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.vocably.auth.dto.AuthResponse;
 import com.vocably.auth.dto.LoginRequest;
@@ -15,8 +14,7 @@ import com.vocably.user.User;
 import com.vocably.user.UserService;
 import com.vocably.user.dto.UserResponse;
 
-import jakarta.servlet.http.HttpServletResponse;
-@Service 
+@Service
 public class AuthService {
 	private final UserService userService;
 	private final PasswordEncoder passwordEncoder;
@@ -28,22 +26,27 @@ public class AuthService {
 		this.jwtService = jwtService;
 	}
 
+	@Transactional
 	public AuthResponse registerUser(RegisterRequest request) {
-		if (isEmailRegistered(request.email())) {
+		String normalizedEmail = request.email().trim().toLowerCase();
+
+		if (isEmailRegistered(normalizedEmail)) {
 			throw new IllegalArgumentException("Email is already registered");
 		}
 
 		String passwordHash = hashPassword(request.password());
-		User user = userService.createUser(request.email(), request.displayName()	, passwordHash);
+		User user = userService.createUser(normalizedEmail, request.displayName().trim(), passwordHash);
 
 		TokenResponse tokens = jwtService.generateTokens(user);
 		UserResponse userResponse = new UserResponse(user.getId(), user.getEmail(), user.getDisplayName(), user.getCreatedAt());
 
 		return new AuthResponse(tokens, userResponse);
 	}
-	
+
 	public AuthResponse loginUser(LoginRequest request) {
-		User user = userService.getUserByEmail(request.email())
+		String normalizedEmail = request.email().trim().toLowerCase();
+
+		User user = userService.getUserByEmail(normalizedEmail)
 				.orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 
 		if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
@@ -56,53 +59,27 @@ public class AuthService {
 		return new AuthResponse(tokens, userResponse);
 	}
 
-	public void logout(HttpServletResponse response) {
-    ResponseCookie cookie = ResponseCookie
-            .from("refreshToken", "")
-            .httpOnly(true)
-            .secure(false)
-            .sameSite("Strict")
-            .path("/api/auth")
-            .maxAge(0)
-            .build();
+	public TokenResponse refresh(String refreshToken) {
+		if (!jwtService.isRefreshTokenValid(refreshToken)) {
+			throw new IllegalArgumentException("Invalid refresh token");
+		}
 
-    response.addHeader(
-            HttpHeaders.SET_COOKIE,
-            cookie.toString()
-    );
+		UUID userId = UUID.fromString(jwtService.extractUserId(refreshToken));
+
+		User user = userService.getUserById(userId)
+				.orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+		String newAccessToken = jwtService.generateAccessToken(user);
+		String newRefreshToken = jwtService.generateRefreshToken(user);
+
+		return new TokenResponse(newAccessToken, newRefreshToken);
 	}
-
-	public TokenResponse refresh(
-        String refreshToken,
-        HttpServletResponse response
-) {
-    if (!jwtService.isRefreshTokenValid(refreshToken)) {
-        throw new IllegalArgumentException("Invalid refresh token");
-    }
-
-	UUID userId = UUID.fromString(jwtService.extractUserId(refreshToken));
-
-    User user = userService.getUserById(userId)
-            .orElseThrow(() ->
-                    new IllegalArgumentException("User not found")
-            );
-
-    String newAccessToken =
-            jwtService.generateAccessToken(user);
-
-    String newRefreshToken =
-            jwtService.generateRefreshToken(user);
-
-	return new TokenResponse(newAccessToken, newRefreshToken);
-}
 
 	private String hashPassword(String password) {
-		
 		return passwordEncoder.encode(password);
 	}
+
 	private boolean isEmailRegistered(String email) {
 		return userService.getUserByEmail(email).isPresent();
 	}
-
-
 }
