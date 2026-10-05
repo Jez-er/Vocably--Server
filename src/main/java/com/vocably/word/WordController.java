@@ -80,7 +80,7 @@ public class WordController {
         @ApiResponse(responseCode = "404", description = "No words found for the given dictionary")
     })
     public ResponseEntity<List<WordResponse>> getWordsByDictionary(
-            @Parameter(description = "UUID of the dictionary") @PathVariable String dictionaryId) {
+            @Parameter(description = "UUID of the dictionary") @PathVariable UUID dictionaryId) {
         List<WordResponse> responses = wordService.findByDictionaryId(dictionaryId);
         if (responses == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

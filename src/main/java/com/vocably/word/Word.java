@@ -29,8 +29,8 @@ public class Word {
   @GeneratedValue 
   private UUID id;
 
-	@Column (nullable = false)
-	private UUID dictionary_id;
+	@Column (nullable = false, name = "dictionary_id")
+	private UUID dictionaryId;
 
   @Column (nullable = false)
   private String word;
@@ -41,22 +41,22 @@ public class Word {
   @Column (nullable = true)
   private String[] examples;
 
-  @Column (nullable = true)
-  private String[] synonyms_id;
+  @Column (nullable = true, name = "synonyms_id")
+  private String[] synonymsId;
 
-  @Column (nullable = true)
-  private String[] antonyms_id;
+  @Column (nullable = true, name = "antonyms_id")
+  private String[] antonymsId;
 
-  @Column (nullable = false)
-  private Integer Scores = 0;
+  @Column (name = "scores", nullable = false)
+  private Integer scores = 0;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
   private WordStatus status = WordStatus.SEED; 
 
   @Column(name = "created_at", nullable = false)
-  private LocalDateTime created_at;
+  private LocalDateTime createdAt;
 
   @Column(name = "updated_at", nullable = false)
-  private LocalDateTime updated_at;
+  private LocalDateTime updatedAt;
 }

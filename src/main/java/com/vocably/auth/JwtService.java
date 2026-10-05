@@ -48,20 +48,35 @@ public class JwtService {
 				return new TokenResponse(accessToken, refreshToken);
 		}
 
-		public boolean isRefreshTokenValid(String token) {
-    try {
-        var claims = Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+	    public boolean isAccessTokenValid(String token) {
+        try {
+            var claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
 
-        return "refresh".equals(claims.get("type", String.class));
+            return "access".equals(claims.get("type", String.class));
 
-    } catch (Exception e) {
-        return false;
+        } catch (Exception e) {
+            return false;
+        }
     }
-	}
+
+    public boolean isRefreshTokenValid(String token) {
+        try {
+            var claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return "refresh".equals(claims.get("type", String.class));
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
 		public String extractUserId(String token) {
     return Jwts.parser()

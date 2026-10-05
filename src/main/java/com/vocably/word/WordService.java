@@ -22,11 +22,11 @@ public class WordService {
 	public WordResponse createWord(WordCreateRequest request) {
 		Word word = new Word();
 
-		word.setDictionary_id(UUID.fromString(request.dictionary_id()));
+		word.setDictionaryId(UUID.fromString(request.dictionary_id()));
 		word.setWord(request.word());
 		word.setDefinitions(request.definitions());
-		word.setCreated_at(LocalDateTime.now());
-		word.setUpdated_at(LocalDateTime.now());
+		word.setCreatedAt(LocalDateTime.now());
+		word.setUpdatedAt(LocalDateTime.now());
 
 		Word savedWord = wordRepository.save(word);
 
@@ -58,7 +58,7 @@ public class WordService {
 				.orElse(null);
 	}
 
-	public List<WordResponse> findByDictionaryId(String dictionaryId) {
+	public List<WordResponse> findByDictionaryId(UUID dictionaryId) {
 		Optional<List<Word>> words = wordRepository.findByDictionaryId(dictionaryId);
 
 		return words
@@ -71,16 +71,16 @@ public class WordService {
 	private WordResponse toResponse(Word word) {
 		return new WordResponse(
 				word.getId(),
-				word.getDictionary_id().toString(),
+				word.getDictionaryId().toString(),
 				word.getWord(),
 				word.getDefinitions(),
 				word.getExamples(),
-				word.getSynonyms_id(),
-				word.getAntonyms_id(),
+				word.getSynonymsId(),
+				word.getAntonymsId(),
 				word.getScores(),
 				word.getStatus().name(),
-				word.getCreated_at().toString(),
-				word.getUpdated_at().toString()
+				word.getCreatedAt().toString(),
+				word.getUpdatedAt().toString()
 		);
 	}
 }

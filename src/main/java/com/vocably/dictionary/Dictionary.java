@@ -21,9 +21,9 @@ public class Dictionary {
   @GeneratedValue 
   private UUID id;
 
-	@Column (nullable = false)
-	private UUID user_id;
+	@Column (nullable = false, name = "user_id")
+	private UUID userId;
 
-  @Column (nullable = false)
-  private String language_code;
+  @Column (nullable = false, name = "language_code")
+  private String languageCode;
 }

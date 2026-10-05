@@ -24,15 +24,15 @@ public class DictionaryService {
 
         Dictionary dictionary = new Dictionary();
 
-        dictionary.setUser_id(UUID.fromString(request.UserId()));
-        dictionary.setLanguage_code(request.LanguageCode());
+        dictionary.setUserId(UUID.fromString(request.UserId()));
+        dictionary.setLanguageCode(request.LanguageCode());
 
         Dictionary savedDictionary = dictionaryRepository.save(dictionary);
 
         return new DictionaryResponse(
                 savedDictionary.getId(),
-                savedDictionary.getUser_id().toString(),
-                savedDictionary.getLanguage_code()
+                savedDictionary.getUserId().toString(),
+                savedDictionary.getLanguageCode()
         );
     }
 
@@ -44,8 +44,8 @@ public class DictionaryService {
         return dictionary
                 .map(dict -> new DictionaryResponse(
                         dict.getId(),
-                        dict.getUser_id().toString(),
-                        dict.getLanguage_code()
+                        dict.getUserId().toString(),
+                        dict.getLanguageCode()
                 ))
                 .orElse(null);
     }
@@ -58,8 +58,8 @@ public class DictionaryService {
         return dictionary	
                 .map(dict -> new DictionaryResponse(
                         dict.getId(),
-                        dict.getUser_id().toString(),
-                        dict.getLanguage_code()
+                        dict.getUserId().toString(),
+                        dict.getLanguageCode()
                 ))
                 .orElse(null);
     }
@@ -70,8 +70,8 @@ public class DictionaryService {
                 .stream()
                 .map(lang -> new DictionaryResponse(
                         lang.getId(),
-                        lang.getUser_id().toString(),
-                        lang.getLanguage_code()
+                        lang.getUserId().toString(),
+                        lang.getLanguageCode()
                 ))
                 .toList();
     }
