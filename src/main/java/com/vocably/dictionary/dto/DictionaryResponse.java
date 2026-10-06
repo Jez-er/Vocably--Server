@@ -4,6 +4,6 @@ import java.util.UUID;
 
 public record DictionaryResponse(
     UUID id,
-		String userId,
-		String LanguageCode
+    UUID userId,
+    String languageCode
 ) {}

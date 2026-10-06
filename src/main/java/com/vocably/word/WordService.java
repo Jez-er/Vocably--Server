@@ -1,86 +1,95 @@
 package com.vocably.word;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.vocably.common.error.ResourceNotFoundException;
+import com.vocably.dictionary.DictionaryService;
 import com.vocably.word.dto.WordCreateRequest;
 import com.vocably.word.dto.WordResponse;
 
+/**
+ * Words, always scoped to the owner of the dictionary they live in.
+ *
+ * <p>Every read filters by owner and every write checks the target dictionary's owner, so one
+ * user's vocabulary is never visible or writable from another's token.
+ */
 @Service
+@Transactional(readOnly = true)
 public class WordService {
 
 	private final WordRepository wordRepository;
+	private final DictionaryService dictionaryService;
 
-	public WordService(WordRepository wordRepository) {
+	public WordService(WordRepository wordRepository, DictionaryService dictionaryService) {
 		this.wordRepository = wordRepository;
+		this.dictionaryService = dictionaryService;
 	}
 
-	public WordResponse createWord(WordCreateRequest request) {
+	@Transactional
+	public WordResponse createWord(UUID ownerId, WordCreateRequest request) {
+		requireOwnedDictionary(ownerId, request.dictionaryId());
+
 		Word word = new Word();
-
-		word.setDictionaryId(UUID.fromString(request.dictionary_id()));
-		word.setWord(request.word());
+		word.setDictionaryId(request.dictionaryId());
+		word.setWord(request.word().trim());
 		word.setDefinitions(request.definitions());
-		word.setCreatedAt(LocalDateTime.now());
-		word.setUpdatedAt(LocalDateTime.now());
 
-		Word savedWord = wordRepository.save(word);
-
-		return toResponse(savedWord);
+		return toResponse(wordRepository.save(word));
 	}
 
-	public List<WordResponse> getAll() {
-		return wordRepository.findAll()
+	public List<WordResponse> getAll(UUID ownerId) {
+		return wordRepository.findAllOwnedBy(ownerId)
 				.stream()
-				.map(this::toResponse)
+				.map(WordService::toResponse)
 				.toList();
 	}
 
-	public WordResponse findById(UUID id) {
-		Optional<Word> word = wordRepository.findById(id);
-
-		return word
-				.map(this::toResponse)
-				.orElse(null);
+	public WordResponse findById(UUID ownerId, UUID id) {
+		return wordRepository.findOwnedById(id, ownerId)
+				.map(WordService::toResponse)
+				.orElseThrow(() -> ResourceNotFoundException.of("Word", id));
 	}
 
-	public List<WordResponse> findByWord(String word) {
-		Optional<List<Word>> words = wordRepository.findByWord(word);
-
-		return words
-				.map(list -> list.stream()
-						.map(this::toResponse)
-						.toList())
-				.orElse(null);
+	public List<WordResponse> findByWord(UUID ownerId, String word) {
+		return wordRepository.findOwnedByWord(word, ownerId)
+				.stream()
+				.map(WordService::toResponse)
+				.toList();
 	}
 
-	public List<WordResponse> findByDictionaryId(UUID dictionaryId) {
-		Optional<List<Word>> words = wordRepository.findByDictionaryId(dictionaryId);
+	public List<WordResponse> findByDictionaryId(UUID ownerId, UUID dictionaryId) {
+		requireOwnedDictionary(ownerId, dictionaryId);
 
-		return words
-				.map(list -> list.stream()
-						.map(this::toResponse)
-						.toList())
-				.orElse(null);
+		return wordRepository.findByDictionaryId(dictionaryId)
+				.stream()
+				.map(WordService::toResponse)
+				.toList();
 	}
 
-	private WordResponse toResponse(Word word) {
+	/** A dictionary owned by someone else is reported as missing, not as forbidden. */
+	private void requireOwnedDictionary(UUID ownerId, UUID dictionaryId) {
+		if (!dictionaryService.isOwnedBy(ownerId, dictionaryId)) {
+			throw ResourceNotFoundException.of("Dictionary", dictionaryId);
+		}
+	}
+
+	private static WordResponse toResponse(Word word) {
 		return new WordResponse(
 				word.getId(),
-				word.getDictionaryId().toString(),
+				word.getDictionaryId(),
 				word.getWord(),
 				word.getDefinitions(),
 				word.getExamples(),
 				word.getSynonymsId(),
 				word.getAntonymsId(),
 				word.getScores(),
-				word.getStatus().name(),
-				word.getCreatedAt().toString(),
-				word.getUpdatedAt().toString()
+				word.getStatus(),
+				word.getCreatedAt(),
+				word.getUpdatedAt()
 		);
 	}
 }

@@ -44,7 +44,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // API docs
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+    // 2.8.x is the line that targets Spring Boot 3.4/3.5. 2.6.0 was built against Spring
+    // Framework 6.1 and calls ControllerAdviceBean(Object), a constructor removed in 6.2 — so with
+    // Boot 3.5 it threw NoSuchMethodError and returned 500 for /v3/api-docs as soon as the project
+    // had any @ControllerAdvice bean.
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17")
 
     // Utils
     compileOnly("org.projectlombok:lombok:1.18.48")

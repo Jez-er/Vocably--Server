@@ -22,6 +22,7 @@ public class UserService {
 		user.setEmail(email.trim().toLowerCase());
 		user.setDisplayName(displayName.trim());
 		user.setPasswordHash(passwordHash);
+		user.setProvider(AuthProvider.LOCAL);
 		return userRepository.save(user);
 	}
 
@@ -31,5 +32,11 @@ public class UserService {
 
 	public Optional<User> getUserByEmail(String email) {
 		return userRepository.findByEmail(email.trim().toLowerCase());
+	}
+
+	@Transactional
+	public User updatePasswordHash(User user, String passwordHash) {
+		user.setPasswordHash(passwordHash);
+		return userRepository.save(user);
 	}
 }
