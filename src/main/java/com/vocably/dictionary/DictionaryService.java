@@ -12,12 +12,6 @@ import com.vocably.dictionary.dto.DictionaryCreateRequest;
 import com.vocably.dictionary.dto.DictionaryResponse;
 import com.vocably.language.LanguageService;
 
-/**
- * Dictionaries, always scoped to their owner.
- *
- * <p>Every method takes the owner's id and filters on it, so a caller cannot reach a dictionary
- * belonging to another user — a missing row and someone else's row are both reported as 404.
- */
 @Service
 @Transactional(readOnly = true)
 public class DictionaryService {
@@ -37,8 +31,6 @@ public class DictionaryService {
     public DictionaryResponse createDictionary(UUID ownerId, DictionaryCreateRequest request) {
         String languageCode = request.languageCode().trim().toLowerCase();
 
-        // Checked up front so an unknown code is a 404 about the language, rather than a foreign
-        // key violation surfacing as a generic conflict.
         if (!languageService.existsByCode(languageCode)) {
             throw ResourceNotFoundException.of("Language", languageCode);
         }
@@ -75,7 +67,6 @@ public class DictionaryService {
                 .toList();
     }
 
-    /** Whether the dictionary exists and belongs to the given user. */
     public boolean isOwnedBy(UUID ownerId, UUID dictionaryId) {
         return dictionaryRepository.findByIdAndUserId(dictionaryId, ownerId).isPresent();
     }

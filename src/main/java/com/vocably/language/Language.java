@@ -11,14 +11,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
-@Entity 
+@Entity
 @Table (name = "languages")
-@Getter 
-@Setter 
-@NoArgsConstructor 
+@Getter
+@Setter
+@NoArgsConstructor
 public class Language {
-	@Id 
+    @Id
   @GeneratedValue
   private UUID id;
 
@@ -28,6 +27,6 @@ public class Language {
   @Column(nullable = false, unique = true)
   private String code;
 
-	@Column (nullable = false)
-	private String flag;
+    @Column (nullable = false)
+    private String flag;
 }

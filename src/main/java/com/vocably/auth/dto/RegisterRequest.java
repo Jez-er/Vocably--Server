@@ -15,7 +15,7 @@ public record RegisterRequest(
     String displayName,
 
     @NotBlank
-    @Size(min = 8, max = 20)
+    @Size(min = 8, max = 72)
     String password
 
 ) {}

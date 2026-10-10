@@ -1,8 +1,11 @@
 package com.vocably.word;
 
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +22,8 @@ import com.vocably.word.dto.WordCreateRequest;
 import com.vocably.word.dto.WordResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import org.springdoc.core.annotations.ParameterObject;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,6 +38,8 @@ import jakarta.validation.Valid;
 @SecurityRequirement(name = "BearerAuth")
 @Tag(name = "Words", description = "Word management, scoped to the authenticated user")
 public class WordController {
+
+    private static final String CREATED_AT = "createdAt";
 
     private final WordService wordService;
 
@@ -71,50 +78,52 @@ public class WordController {
         return wordService.findById(principal.getId(), id);
     }
 
-    /** An empty result is an empty list with 200 — "no matches" is a valid answer, not a 404. */
     @GetMapping("/search/{word}")
     @Operation(
             summary = "Search your words by text",
-            description = "Case-insensitive exact match over the authenticated user's words. Returns an empty list when nothing matches."
+            description = "Case-insensitive exact match over the authenticated user's words. Paged; returns an empty page when nothing matches."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Matching words, possibly none")
     })
-    public List<WordResponse> searchByWord(
+    public PagedModel<WordResponse> searchByWord(
             @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal,
-            @Parameter(description = "Word text to search for") @PathVariable String word
+            @Parameter(description = "Word text to search for") @PathVariable String word,
+            @ParameterObject @PageableDefault(sort = CREATED_AT, direction = Direction.DESC) Pageable pageable
     ) {
-        return wordService.findByWord(principal.getId(), word);
+        return new PagedModel<>(wordService.findByWord(principal.getId(), word, pageable));
     }
 
     @GetMapping("/dictionary/{dictionaryId}")
     @Operation(
             summary = "Get words by dictionary",
-            description = "Retrieves the words in one of the authenticated user's dictionaries. Returns an empty list when the dictionary has none."
+            description = "Retrieves the words in one of the authenticated user's dictionaries. Paged; returns an empty page when the dictionary has none."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Words in the dictionary, possibly none"),
         @ApiResponse(responseCode = "404", description = "The dictionary does not exist or is not yours (code NOT_FOUND)",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
-    public List<WordResponse> getWordsByDictionary(
+    public PagedModel<WordResponse> getWordsByDictionary(
             @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal,
-            @Parameter(description = "UUID of the dictionary") @PathVariable UUID dictionaryId
+            @Parameter(description = "UUID of the dictionary") @PathVariable UUID dictionaryId,
+            @ParameterObject @PageableDefault(sort = CREATED_AT, direction = Direction.DESC) Pageable pageable
     ) {
-        return wordService.findByDictionaryId(principal.getId(), dictionaryId);
+        return new PagedModel<>(wordService.findByDictionaryId(principal.getId(), dictionaryId, pageable));
     }
 
     @GetMapping
     @Operation(
             summary = "Get all your words",
-            description = "Retrieves every word across the authenticated user's dictionaries."
+            description = "Retrieves every word across the authenticated user's dictionaries, newest first. Paged."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Words retrieved successfully")
     })
-    public List<WordResponse> getAllWords(
-            @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal
+    public PagedModel<WordResponse> getAllWords(
+            @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal,
+            @ParameterObject @PageableDefault(sort = CREATED_AT, direction = Direction.DESC) Pageable pageable
     ) {
-        return wordService.getAll(principal.getId());
+        return new PagedModel<>(wordService.getAll(principal.getId(), pageable));
     }
 }

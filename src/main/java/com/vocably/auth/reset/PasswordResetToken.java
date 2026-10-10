@@ -12,12 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * A single-use password-reset grant.
- *
- * <p>Only the SHA-256 of the token is persisted, so the table cannot be read back into working
- * reset links.
- */
 @Entity
 @Table(name = "password_reset_tokens")
 @Getter

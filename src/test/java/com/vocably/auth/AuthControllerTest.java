@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,12 +26,6 @@ import com.vocably.config.CorsProperties;
 import com.vocably.config.SecurityConfig;
 import com.vocably.user.User;
 
-/**
- * Covers the status codes and error body the client branches on.
- *
- * <p>These used to be 500s: the service threw {@code IllegalArgumentException} for every rejection
- * and nothing translated it.
- */
 @WebMvcTest(controllers = {AuthController.class, OAuth2StubController.class})
 @Import({
         SecurityConfig.class,
@@ -46,16 +40,16 @@ class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService;
 
-    @MockBean
+    @MockitoBean
     private PasswordResetService passwordResetService;
 
-    @MockBean
+    @MockitoBean
     private JwtService jwtService;
 
-    @MockBean
+    @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
 
     @Test
@@ -103,8 +97,6 @@ class AuthControllerTest {
 
     @Test
     void login_withOverlongPassword_isAnAuthenticationFailureNotAValidationFailure() throws Exception {
-        // LoginRequest deliberately has no @Size: an account whose password predates the current
-        // limits must still be able to log in, and a wrong password is a 401 either way.
         when(authService.loginUser(any())).thenThrow(new InvalidCredentialsException());
 
         mockMvc.perform(post("/api/auth/login")
@@ -148,8 +140,7 @@ class AuthControllerTest {
         user.setPasswordHash("hashedpass");
         user.setCreatedAt(createdAt);
 
-        when(jwtService.isAccessTokenValid(token)).thenReturn(true);
-        when(jwtService.extractUserId(token)).thenReturn(userId.toString());
+        when(jwtService.parseAccessToken(token)).thenReturn(new JwtService.AccessTokenClaims(userId));
         when(customUserDetailsService.loadUserById(userId)).thenReturn(new UserPrincipal(user));
 
         mockMvc.perform(get("/api/auth/me")

@@ -1,5 +1,6 @@
 package com.vocably.auth.reset;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,8 +13,11 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
 
     Optional<PasswordResetToken> findByTokenHash(String tokenHash);
 
-    /** Issuing a new link invalidates any outstanding one for that user. */
     @Modifying
     @Query("delete from PasswordResetToken t where t.userId = :userId and t.usedAt is null")
     void deleteUnusedByUserId(@Param("userId") UUID userId);
+
+    @Modifying
+    @Query("delete from PasswordResetToken t where t.expiresAt < :cutoff or t.usedAt is not null")
+    int deleteExpiredOrUsed(@Param("cutoff") Instant cutoff);
 }

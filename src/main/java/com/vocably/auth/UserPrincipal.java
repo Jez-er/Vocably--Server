@@ -9,15 +9,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.vocably.user.Role;
 import com.vocably.user.User;
 
-/**
- * The authenticated user as the request sees it.
- *
- * <p>Carries the display name and creation time as well as the id, so {@code GET /api/auth/me} can
- * answer from the security context without a second query — the user row was already loaded to
- * build this.
- */
 public class UserPrincipal implements UserDetails {
 
     private final UUID id;
@@ -25,6 +19,7 @@ public class UserPrincipal implements UserDetails {
     private final String displayName;
     private final String password;
     private final Instant createdAt;
+    private final Role role;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public UserPrincipal(User user) {
@@ -33,7 +28,9 @@ public class UserPrincipal implements UserDetails {
         this.displayName = user.getDisplayName();
         this.password = user.getPasswordHash();
         this.createdAt = user.getCreatedAt();
-        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        this.role = user.getRole();
+
+        this.authorities = List.of(new SimpleGrantedAuthority(this.role.authority()));
     }
 
     public UUID getId() {
@@ -50,6 +47,10 @@ public class UserPrincipal implements UserDetails {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     @Override

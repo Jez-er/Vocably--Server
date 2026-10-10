@@ -7,10 +7,13 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.vocably.auth.exception.InvalidTokenException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,29 +37,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-
         String token = parseBearerToken(request);
 
-        if (StringUtils.hasText(token) && jwtService.isAccessTokenValid(token)) {
-            try {
-                String userIdStr = jwtService.extractUserId(token);
-                UUID userId = UUID.fromString(userIdStr);
-                UserDetails userDetails = customUserDetailsService.loadUserById(userId);
-
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (Exception e) {
-                logger.error("Could not set user authentication in security context", e);
-            }
+        if (StringUtils.hasText(token)) {
+            authenticate(request, token);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void authenticate(HttpServletRequest request, String token) {
+        UUID userId;
+
+        try {
+            userId = jwtService.parseAccessToken(token).userId();
+        } catch (InvalidTokenException e) {
+            logger.debug("Rejected access token");
+            return;
+        }
+
+        UserDetails userDetails;
+
+        try {
+            userDetails = customUserDetailsService.loadUserById(userId);
+        } catch (UsernameNotFoundException e) {
+            logger.debug("Access token names a user that no longer exists");
+            return;
+        }
+
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private String parseBearerToken(HttpServletRequest request) {

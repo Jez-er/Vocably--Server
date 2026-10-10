@@ -56,13 +56,6 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    /**
-     * CORS for the browser client.
-     *
-     * <p>Origins come from {@code app.cors.allowed-origins} rather than being hard-coded, and are
-     * listed exactly: {@code allowCredentials} has to be on for the refresh-token cookie to travel,
-     * and the spec forbids pairing that with a {@code *} origin.
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -94,19 +87,17 @@ public class SecurityConfig {
                 .accessDeniedHandler(apiAccessDeniedHandler)
             )
             .authorizeHttpRequests(auth -> auth
-                // A CORS preflight carries no Authorization header, so it has to be allowed
-                // through on its own: matched by anyRequest().authenticated() it would be
-                // answered with a 401 the browser reads as "origin not allowed".
+
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // Listed before /api/auth/**, which is permitAll — the first matching rule wins,
-                // and this is the one endpoint under /api/auth that needs an access token.
+
                 .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                 .requestMatchers(
                     "/api/auth/**",
                     "/api/health",
-                    // Spring forwards to /error to render a failure. Without this the forward is
-                    // itself an unauthenticated request, so the entry point turns every error —
-                    // including a validation failure or a 404 — into a generic 401.
+
+                    "/actuator/health",
+                    "/actuator/health/**",
+
                     "/error",
                     "/docs/**",
                     "/swagger-ui/**",

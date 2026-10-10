@@ -10,17 +10,6 @@ import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 
-/**
- * Replaces Boot's {@code BasicErrorController} so container-level error dispatches use the standard
- * error body too.
- *
- * <p>Not everything reaches {@link GlobalExceptionHandler}: a failure inside a servlet filter, or a
- * status the container sets itself, is dispatched to {@code /error} instead. Boot's default
- * controller answers those with {@code {timestamp, status, error, path}} — no {@code message}, no
- * {@code code} — which is a second payload shape clients would have to handle.
- *
- * <p>Declaring an {@link ErrorController} bean makes Boot back off its own.
- */
 @Hidden
 @RestController
 public class ApiErrorController implements ErrorController {
@@ -62,7 +51,6 @@ public class ApiErrorController implements ErrorController {
     }
 
     private String messageFor(HttpServletRequest request, HttpStatus status) {
-        // Never echo the container's message on a 5xx: it can carry exception text.
         if (status.is5xxServerError()) {
             return "Unexpected server error";
         }
@@ -72,7 +60,6 @@ public class ApiErrorController implements ErrorController {
         return message instanceof String text && !text.isBlank() ? text : status.getReasonPhrase();
     }
 
-    /** The URI the client actually called, not the {@code /error} forward. */
     private String originalPath(HttpServletRequest request) {
         Object uri = request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI);
 

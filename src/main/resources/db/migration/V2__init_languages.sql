@@ -6,7 +6,6 @@ CREATE TABLE languages (
 );
 
 INSERT INTO languages (title, code, flag) VALUES
--- Major world languages
 ('English',                'en', '🇬🇧'),
 ('Ukrainian',              'uk', '🇺🇦'),
 ('Spanish',                'es', '🇪🇸'),

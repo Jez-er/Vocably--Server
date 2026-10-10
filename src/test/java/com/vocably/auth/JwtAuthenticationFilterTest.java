@@ -17,6 +17,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.vocably.auth.exception.InvalidTokenException;
 import com.vocably.user.User;
 
 import jakarta.servlet.ServletException;
@@ -54,8 +55,7 @@ class JwtAuthenticationFilterTest {
         user.setPasswordHash("hashedpass");
         UserPrincipal userPrincipal = new UserPrincipal(user);
 
-        when(jwtService.isAccessTokenValid(token)).thenReturn(true);
-        when(jwtService.extractUserId(token)).thenReturn(userId.toString());
+        when(jwtService.parseAccessToken(token)).thenReturn(new JwtService.AccessTokenClaims(userId));
         when(customUserDetailsService.loadUserById(userId)).thenReturn(userPrincipal);
 
         jwtAuthenticationFilter.doFilter(request, response, filterChain);
@@ -73,7 +73,8 @@ class JwtAuthenticationFilterTest {
         String token = "invalid-token";
         request.addHeader("Authorization", "Bearer " + token);
 
-        when(jwtService.isAccessTokenValid(token)).thenReturn(false);
+        when(jwtService.parseAccessToken(token))
+                .thenThrow(new InvalidTokenException("Invalid or expired access token"));
 
         jwtAuthenticationFilter.doFilter(request, response, filterChain);
 

@@ -1,0 +1,19 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET:ZGV2LW9ubHktc2VjcmV0LW5vdC1mb3ItZGVwbG95bWVudC12b2NhYmx5LWxvY2FsLTAwMQ==}
+
+app:
+  auth:
+    cookie:
+      secure: false
+
+logging:
+  level:
+    com.vocably: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE

@@ -9,7 +9,7 @@ public record ResetPasswordRequest(
     String token,
 
     @NotBlank
-    @Size(min = 8, max = 20)
+    @Size(min = 8, max = 72)
     String password
 
 ) {}

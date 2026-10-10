@@ -12,7 +12,6 @@ import com.vocably.auth.NoopRefreshTokenStore;
 import com.vocably.auth.RedisRefreshTokenStore;
 import com.vocably.auth.RefreshTokenStore;
 
-/** Picks the refresh-token whitelist implementation. Redis unless explicitly disabled. */
 @Configuration
 public class RefreshTokenStoreConfig {
 

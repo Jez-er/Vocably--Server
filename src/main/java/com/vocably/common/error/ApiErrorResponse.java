@@ -7,15 +7,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The single error body shape for the whole API.
- *
- * <p>Produced by {@link GlobalExceptionHandler}, by {@link ApiErrorController} for container-level
- * error dispatches, and by {@code JwtAuthenticationEntryPoint} / {@code ApiAccessDeniedHandler} for
- * failures raised inside the security filter chain — so a client only ever has to parse one shape.
- *
- * @param fieldErrors per-field validation messages; present only on a validation failure
- */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "ApiError", description = "Error body returned by every endpoint")
 public record ApiErrorResponse(

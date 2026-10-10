@@ -8,15 +8,13 @@ import jakarta.validation.constraints.NotNull;
 
 public record WordCreateRequest(
 
-	@NotNull
-	UUID dictionaryId,
+    @NotNull
+    UUID dictionaryId,
 
-	@NotBlank
-	String word,
+    @NotBlank
+    String word,
 
-	// @NotEmpty, not @NotBlank: @NotBlank only applies to CharSequence, and on an array it throws
-	// UnexpectedTypeException as soon as validation actually runs.
-	@NotEmpty
-	String[] definitions
+    @NotEmpty
+    String[] definitions
 
 ) {}

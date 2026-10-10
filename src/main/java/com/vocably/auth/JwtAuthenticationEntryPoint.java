@@ -16,12 +16,6 @@ import com.vocably.common.error.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * Renders a 401 raised inside the security filter chain using the standard error body.
- *
- * <p>Uses the Spring-managed {@link ObjectMapper} rather than a fresh one so the {@code timestamp}
- * serialises as an ISO-8601 string, exactly as it does from {@code GlobalExceptionHandler}.
- */
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 

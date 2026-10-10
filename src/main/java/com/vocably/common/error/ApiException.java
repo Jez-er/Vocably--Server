@@ -2,12 +2,6 @@ package com.vocably.common.error;
 
 import org.springframework.http.HttpStatus;
 
-/**
- * Base class for failures that map to a deliberate HTTP status and {@link ErrorCode}.
- *
- * <p>{@link GlobalExceptionHandler} renders any subclass straight into the standard error body, so
- * domain code throws instead of returning status codes or error strings.
- */
 public abstract class ApiException extends RuntimeException {
 
     private final HttpStatus status;

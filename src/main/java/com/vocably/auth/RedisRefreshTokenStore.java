@@ -5,14 +5,6 @@ import java.util.UUID;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-/**
- * Redis-backed whitelist, one set of live {@code jti}s per user.
- *
- * <p>A set rather than a key per token: revoking every session for a user is then a single DEL
- * instead of a KEYS scan. The set's TTL is pushed forward on each issue, so it outlives the newest
- * token; ids of tokens that have since expired may linger in it, which is harmless because
- * {@link JwtService#parseRefreshToken} rejects an expired token before this store is consulted.
- */
 public class RedisRefreshTokenStore implements RefreshTokenStore {
 
     private static final String KEY_PREFIX = "auth:refresh:";

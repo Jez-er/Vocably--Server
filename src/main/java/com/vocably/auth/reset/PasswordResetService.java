@@ -21,7 +21,6 @@ import com.vocably.auth.exception.InvalidTokenException;
 import com.vocably.user.User;
 import com.vocably.user.UserService;
 
-/** Issues and redeems password-reset tokens. */
 @Service
 public class PasswordResetService {
 
@@ -54,12 +53,6 @@ public class PasswordResetService {
         this.resetUrlTemplate = resetUrlTemplate;
     }
 
-    /**
-     * Issues a reset link for the address, if it has an account.
-     *
-     * <p>Returns normally either way, and the endpoint answers identically either way: telling the
-     * caller whether an address is registered turns this into an account-enumeration oracle.
-     */
     @Transactional
     public void requestReset(String email) {
         Optional<User> maybeUser = userService.getUserByEmail(email);
@@ -82,12 +75,6 @@ public class PasswordResetService {
         notifier.sendResetLink(user, buildResetUrl(rawToken));
     }
 
-    /**
-     * Redeems a reset token and sets the new password.
-     *
-     * <p>Every existing session is revoked: whoever triggered the reset may have done so because
-     * the account was compromised, and the attacker's refresh token would otherwise outlive it.
-     */
     @Transactional
     public void resetPassword(String rawToken, String newPassword) {
         PasswordResetToken token = tokenRepository.findByTokenHash(hash(rawToken))

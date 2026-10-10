@@ -16,7 +16,6 @@ import com.vocably.common.error.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/** Renders a 403 raised inside the security filter chain using the standard error body. */
 @Component
 public class ApiAccessDeniedHandler implements AccessDeniedHandler {
 

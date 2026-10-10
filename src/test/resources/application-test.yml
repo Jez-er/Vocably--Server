@@ -1,0 +1,23 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+app:
+  auth:
+    refresh-token:
+      revocation-enabled: false
+
+jwt:
+  secret: dGVzdC1vbmx5LXNlY3JldC1mb3Itdm9jYWJseS1pbnRlZ3JhdGlvbi10ZXN0cy0wMDE=
+
+management:
+  health:
+    redis:
+      enabled: false
+
+logging:
+  level:
+    org.testcontainers: WARN
+    com.github.dockerjava: WARN

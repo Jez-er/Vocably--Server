@@ -25,25 +25,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
-/**
- * Turns every exception that escapes a controller into the standard {@link ApiErrorResponse}.
- *
- * <p>Without this, Spring Boot answers an uncaught {@code RuntimeException} with a bare 500 and its
- * own error body, which is both the wrong status for a domain failure and a second, incompatible
- * payload shape for clients to parse.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /** Domain failures carry their own status and code. */
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(ApiException exception, HttpServletRequest request) {
         return respond(exception.getStatus(), exception.getCode(), exception.getMessage(), request, null);
     }
 
-    /** Bean validation on a {@code @Valid @RequestBody}, reported per field. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(
             MethodArgumentNotValidException exception,
@@ -52,8 +43,6 @@ public class GlobalExceptionHandler {
         Map<String, String> fieldErrors = new LinkedHashMap<>();
 
         for (FieldError fieldError : exception.getBindingResult().getFieldErrors()) {
-            // Keep the first message per field: a field with several violations would otherwise
-            // report whichever constraint happened to run last.
             fieldErrors.putIfAbsent(fieldError.getField(), messageOf(fieldError));
         }
 
@@ -70,7 +59,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    /** Bean validation on path variables, request params or a validated service call. */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
             ConstraintViolationException exception,
@@ -120,11 +108,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    /**
-     * A missing refresh-token cookie. 401 rather than 400: to a client this is indistinguishable
-     * from an expired session, and treating it as a bad request would make "logged out" look like a
-     * programming error.
-     */
     @ExceptionHandler(MissingRequestCookieException.class)
     public ResponseEntity<ApiErrorResponse> handleMissingCookie(
             MissingRequestCookieException exception,
@@ -183,7 +166,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    /** A unique or foreign-key constraint the application did not check up front. */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(
             DataIntegrityViolationException exception,
@@ -200,12 +182,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    /**
-     * Anything unanticipated.
-     *
-     * <p>The message is deliberately generic: an exception message can carry SQL, class names or
-     * user data, none of which belongs in a client response. The stack trace goes to the log.
-     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception exception, HttpServletRequest request) {
         log.error("Unhandled exception on {}", ApiErrors.pathOf(request), exception);

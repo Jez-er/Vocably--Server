@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import com.vocably.config.AuthCookieProperties;
 
-/** Builds the refresh-token cookie, and the matching cookie that clears it. */
 @Component
 public class RefreshTokenCookieFactory {
 
@@ -16,8 +15,7 @@ public class RefreshTokenCookieFactory {
 
     public RefreshTokenCookieFactory(AuthCookieProperties properties, JwtService jwtService) {
         this.properties = properties;
-        // The cookie outliving the token it carries would leave the client sending a token the
-        // server always rejects, so both expire together.
+
         this.maxAge = Duration.ofMillis(jwtService.getRefreshExpiration());
     }
 

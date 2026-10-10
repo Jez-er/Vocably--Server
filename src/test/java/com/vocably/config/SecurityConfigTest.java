@@ -3,11 +3,17 @@ package com.vocably.config;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -40,17 +46,22 @@ class SecurityConfigTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private JwtService jwtService;
 
-    @MockBean
+    @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
 
-    @MockBean
+    @MockitoBean
     private WordService wordService;
+
+    @MockitoBean
+    private HealthEndpoint healthEndpoint;
 
     @Test
     void publicEndpoint_health_isPermittedWithoutToken() throws Exception {
+        when(healthEndpoint.health()).thenReturn(Health.up().build());
+
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isOk());
     }
@@ -72,9 +83,10 @@ class SecurityConfigTest {
         user.setPasswordHash("hashedpass");
         UserPrincipal userPrincipal = new UserPrincipal(user);
 
-        when(jwtService.isAccessTokenValid(token)).thenReturn(true);
-        when(jwtService.extractUserId(token)).thenReturn(userId.toString());
+        when(jwtService.parseAccessToken(token)).thenReturn(new JwtService.AccessTokenClaims(userId));
         when(customUserDetailsService.loadUserById(userId)).thenReturn(userPrincipal);
+
+        when(wordService.getAll(eq(userId), any(Pageable.class))).thenReturn(Page.empty());
 
         mockMvc.perform(get("/api/words")
                         .header("Authorization", "Bearer " + token))
@@ -105,8 +117,6 @@ class SecurityConfigTest {
 
     @Test
     void currentUserEndpoint_withoutToken_returns401Unauthorized() throws Exception {
-        // /api/auth/me is the one endpoint under the otherwise-public /api/auth/** that must
-        // require a token.
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized());
     }

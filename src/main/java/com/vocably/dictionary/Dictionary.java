@@ -11,18 +11,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity 
+@Entity
 @Table (name = "dictionaries")
-@Getter 
-@Setter 
-@NoArgsConstructor 
+@Getter
+@Setter
+@NoArgsConstructor
 public class Dictionary {
-	@Id 
-  @GeneratedValue 
+    @Id
+  @GeneratedValue
   private UUID id;
 
-	@Column (nullable = false, name = "user_id")
-	private UUID userId;
+    @Column (nullable = false, name = "user_id")
+    private UUID userId;
 
   @Column (nullable = false, name = "language_code")
   private String languageCode;

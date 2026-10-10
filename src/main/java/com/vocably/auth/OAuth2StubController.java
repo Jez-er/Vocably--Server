@@ -15,19 +15,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/**
- * Placeholder for federated sign-in.
- *
- * <p>Deliberately a stub. The endpoints exist and their paths are fixed, so the client's "Continue
- * with Google" button has a defined destination and a defined failure, instead of a handler that
- * does nothing. Both answer 501 with {@code code: NOT_IMPLEMENTED}.
- *
- * <p>The persistence side is already in place — {@code users.password_hash} is nullable and
- * {@code provider}/{@code provider_id} exist (migration V4), so a federated account can be stored.
- * What is missing is the flow itself: the {@code spring-boot-starter-oauth2-client} dependency, the
- * {@code spring.security.oauth2.client.*} registration, and an
- * {@code AuthenticationSuccessHandler} that mints our own JWTs and redirects to the frontend.
- */
 @RestController
 @RequestMapping("/api/auth/oauth2")
 @Tag(name = "Authentication")

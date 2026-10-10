@@ -2,7 +2,6 @@ package com.vocably.common.error;
 
 import org.springframework.http.HttpStatus;
 
-/** A requested resource does not exist, or is not visible to the current user. */
 public class ResourceNotFoundException extends ApiException {
 
     public ResourceNotFoundException(String message) {

@@ -31,7 +31,6 @@ public class User {
     @Column(nullable = false)
     private String displayName;
 
-    /** Null for a federated account, which has no password to check. */
     @Column(nullable = true)
     private String passwordHash;
 
@@ -39,14 +38,16 @@ public class User {
     @Column(nullable = false)
     private AuthProvider provider = AuthProvider.LOCAL;
 
-    /** The provider's own user id; null for {@link AuthProvider#LOCAL}. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
+
     @Column(name = "provider_id")
     private String providerId;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
-    /** Whether this account can be signed into with a password. */
     public boolean hasPassword() {
         return passwordHash != null && !passwordHash.isBlank();
     }

@@ -6,13 +6,6 @@ import org.springframework.stereotype.Component;
 
 import com.vocably.user.User;
 
-/**
- * Writes the reset link to the application log instead of sending email.
- *
- * <p>Stub, deliberately: the reset flow is complete end to end except for delivery, so the link is
- * logged to keep it testable. Logging a working credential is not acceptable in a deployment —
- * replace this bean with a real mail sender before shipping.
- */
 @Component
 public class LoggingPasswordResetNotifier implements PasswordResetNotifier {
 

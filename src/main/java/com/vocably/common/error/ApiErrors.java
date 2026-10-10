@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-/** Builds {@link ApiErrorResponse} instances so every producer emits an identical shape. */
 public final class ApiErrors {
 
     private ApiErrors() {
@@ -35,7 +34,6 @@ public final class ApiErrors {
         );
     }
 
-    /** The path to report for a request. */
     public static String pathOf(HttpServletRequest request) {
         return request == null ? null : request.getRequestURI();
     }
