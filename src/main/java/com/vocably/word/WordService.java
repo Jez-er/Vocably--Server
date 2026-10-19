@@ -62,7 +62,7 @@ public class WordService {
         }
     }
 
-    private static WordResponse toResponse(Word word) {
+    public static WordResponse toResponse(Word word) {
         return new WordResponse(
                 word.getId(),
                 word.getDictionaryId(),
@@ -74,7 +74,8 @@ public class WordService {
                 word.getScores(),
                 word.getStatus(),
                 word.getCreatedAt(),
-                word.getUpdatedAt()
+                word.getUpdatedAt(),
+                word.getLastLearnedAt()
         );
     }
 }

@@ -54,6 +54,9 @@ public class Word {
     @Column(name = "status", nullable = false)
     private WordStatus status = WordStatus.SEED;
 
+    @Column(name = "last_learned_at")
+    private Instant lastLearnedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

@@ -31,6 +31,7 @@ com.vocably
 ├── user/            # сутність користувача, роль, профіль
 ├── dictionary/      # словник на мову, по одному на користувача
 ├── word/            # слова всередині словника
+├── learning/        # денний пул слів для міні-ігор, бали й статуси
 ├── language/        # довідник мов (спільні дані, запис — лише ADMIN)
 ├── common/          # health-check, формат помилок
 └── config/          # Spring-конфігурація (security, CORS, OpenAPI, Redis)
@@ -87,6 +88,8 @@ make format   # привести форматування до .editorconfig
 | `GET` | `/api/dictionaries/{id}`, `/language/{code}` | access-токен |
 | `GET`/`POST` | `/api/words` | access-токен (пагіновано) |
 | `GET` | `/api/words/{id}`, `/search/{word}`, `/dictionary/{id}` | access-токен |
+| `GET` | `/api/learning/words?dictionaryId=` | access-токен (до 25 на добу) |
+| `POST` | `/api/learning/words/{id}/result?successful=` | access-токен |
 | `GET` | `/api/languages` (і `/all`), `/code/{code}`, `/id/{id}` | access-токен |
 | `POST` | `/api/languages` | **ADMIN** |
 | `GET` | `/api/health`, `/actuator/health` | відкритий |
@@ -146,5 +149,5 @@ UPDATE users SET role = 'ADMIN' WHERE email = 'you@example.com';
 
 - Полагодити Java-версію в `Dockerfile`
 - Підключити справжній OAuth2 і мейлер замість заглушок вище
-- Реалізувати фічі learning / garden за тим самим паттерном
+- Реалізувати фічу garden за тим самим паттерном
   (entity + repository + service + controller)

@@ -16,5 +16,6 @@ public record WordResponse(
     Integer scores,
     WordStatus status,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    Instant lastLearnedAt
 ) {}

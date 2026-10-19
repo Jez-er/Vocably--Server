@@ -1,5 +1,7 @@
 package com.vocably.word;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,4 +34,32 @@ public interface WordRepository extends JpaRepository<Word, UUID> {
     Page<Word> findOwnedByWord(@Param("word") String word, @Param("userId") UUID userId, Pageable pageable);
 
     Page<Word> findByDictionaryId(UUID dictionaryId, Pageable pageable);
+
+    @Query(value = """
+            select w.id from words w
+            where w.dictionary_id = :dictionaryId
+              and w.status = :status
+              and (
+                    w.last_learned_at is null
+                 or w.last_learned_at >= cast(:todayStart as timestamptz)
+                 or w.last_learned_at <= cast(:now as timestamptz) - interval '1 day' * (
+                        :minDays + mod(
+                            ('x' || substr(md5(w.id::text || coalesce(w.last_learned_at::text, '')), 1, 7))::bit(28)::int,
+                            :spreadDays
+                        )
+                    )
+              )
+            order by md5(w.id::text || :daySeed)
+            limit :maxCandidates
+            """, nativeQuery = true)
+    List<UUID> findDailyCandidateIds(
+            @Param("dictionaryId") UUID dictionaryId,
+            @Param("status") String status,
+            @Param("now") Instant now,
+            @Param("todayStart") Instant todayStart,
+            @Param("minDays") int minDays,
+            @Param("spreadDays") int spreadDays,
+            @Param("daySeed") String daySeed,
+            @Param("maxCandidates") int maxCandidates
+    );
 }
